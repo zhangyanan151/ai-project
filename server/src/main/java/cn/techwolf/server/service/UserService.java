@@ -2,6 +2,7 @@ package cn.techwolf.server.service;
 
 import cn.techwolf.server.model.User;
 import cn.techwolf.server.repository.UserRepository;
+import cn.techwolf.server.config.OperatorConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,20 +26,19 @@ public class UserService {
     @Autowired
     private UserLoginCacheService userLoginCacheService;
 
+    @Autowired
+    private OperatorConfig operatorConfig;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public User login(String email, String password) {
-        // 先检查缓存中是否存在登录状态
-        User cachedUser = userLoginCacheService.getLoginStatus(email);
-        if (cachedUser != null) {
-            return cachedUser;
-        }
-
         Optional<User> userOpt = userRepository.findByEmail(email);
         
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (passwordEncoder.matches(password, user.getPassword())) {
+                // 设置运营权限标识
+                user.setOperator(operatorConfig.isOperator(email));
                 // 登录成功，缓存用户状态
                 userLoginCacheService.cacheLoginStatus(email, user);
                 return user;

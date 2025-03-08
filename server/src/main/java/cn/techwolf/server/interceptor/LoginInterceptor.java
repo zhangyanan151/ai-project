@@ -1,8 +1,10 @@
 package cn.techwolf.server.interceptor;
 
+import cn.techwolf.server.common.ApiResponse;
 import cn.techwolf.server.config.CookieConfig;
 import cn.techwolf.server.model.User;
 import cn.techwolf.server.service.UserLoginCacheService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,18 +23,15 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (CookieConfig.LOGIN_COOKIE_NAME.equals(cookie.getName())) {
-                    String email = cookie.getValue();
-                    User user = userLoginCacheService.getLoginStatus(email);
-                    if (user != null) {
-                        // 用户已登录
-                        return true;
-                    }
-                    break;
-                }
+        String clientIp = request.getRemoteAddr();
+        log.info("收到请求: path={}, ip={}", request.getRequestURI(), clientIp);
+        
+        String email = request.getParameter("email");
+        if (email != null) {
+            User user = userLoginCacheService.getLoginStatus(email);
+            if (user != null) {
+                // 用户已登录
+                return true;
             }
         }
         
@@ -40,7 +39,8 @@ public class LoginInterceptor implements HandlerInterceptor {
             // 用户未登录，返回401状态码和统一的错误响应格式
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":401,\"message\":\"请先登录\",\"data\":null}");
+            ApiResponse<Object> errorResponse = ApiResponse.error("请先登录");
+            response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
         } catch (IOException e) {
             log.error("写入响应时发生错误", e);
             throw e;

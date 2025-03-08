@@ -26,7 +26,6 @@ public class User {
     private LocalDateTime updateTime;
 
 
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -37,4 +36,7 @@ public class User {
     protected void onUpdate() {
         updateTime = LocalDateTime.now();
     }
+
+    @Transient
+    private boolean isOperator;
 }
