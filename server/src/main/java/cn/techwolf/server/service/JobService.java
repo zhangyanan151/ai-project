@@ -18,12 +18,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 @Slf4j
 @Service
@@ -34,6 +36,9 @@ public class JobService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GptService gptService;
 
     private final Random random = new Random();
 
@@ -54,6 +59,13 @@ public class JobService {
             List<Job> matchedJobs = allJobs.stream()
                     .filter(job -> matchesKeyword(job, keyword))
                     .toList();
+            // 需要内存分页
+            if (matchedJobs.size() < page * size) {
+                page = 1; // 重置页码为第一页，避免越界
+            }
+            int start = Math.max(((page - 1) * size), 0);
+            int end = Math.min(start + size, matchedJobs.size());
+            matchedJobs = matchedJobs.subList(start, end);
             return new PageImpl<>(matchedJobs, pageable, matchedJobs.size());
         } catch (Exception e) {
             log.error("搜索职位失败: keyword={}", keyword, e);
@@ -85,7 +97,7 @@ public class JobService {
         jobRepository.save(job);
     }
 
-    public void processJobFile(String email, MultipartFile file) throws IOException {
+    public void processJobFile(String email, MultipartFile file) throws Exception {
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null) {
             throw new RuntimeException("文件名不能为空");
@@ -104,15 +116,47 @@ public class JobService {
                  XWPFWordExtractor extractor = new XWPFWordExtractor(document)) {
                 text = extractor.getText();
             }
+        } else if ("png".equals(fileExtension)) {
+            BufferedImage image = ImageIO.read(file.getInputStream());
+            Tesseract tesseract = new Tesseract();
+            tesseract.setDatapath("/usr/local/share/tessdata"); // 设置Tesseract数据文件路径
+            tesseract.setLanguage("chi_sim"); // 设置中文识别
+            try {
+                text = tesseract.doOCR(image);
+            } catch (TesseractException e) {
+                log.error("OCR识别失败: {}", e.getMessage());
+                throw new RuntimeException("图片识别失败");
+            }
         } else {
             throw new RuntimeException("不支持的文件类型");
         }
         log.info("开始处理文件: {}", text);
-        List<Job> jobs = extractJobInfoList(text);
+        List<GptService.GptMessage> messages = new ArrayList<>();
+        messages.add(new GptService.GptMessage("system", "帮我把这段文字按照职位名，工作内容，工作时间，工作地点，联系方式这几个字段提取出来。并以JSON格式返回给我，json中职位名为title，工作内容为description，工作时间为workingTime，工作地点为location，联系方式为contactPhone。如果找不到某个字段，则该字段可以为空字符串。返回的json串务必是标准的格式"));
+        messages.add(new GptService.GptMessage("user", text));
+        List<Job> jobs = gptService.requestGPT(messages, 500);
+        log.info("GPT返回结果: {}", jobs);
+        if(null == jobs || jobs.isEmpty()) {
+            jobs = extractJobInfoList(text);
+        }
         for (Job job : jobs) {
+            log.info("解析出的职位: {}", job);
             createJob(email, job);
         }
         log.info("文件处理完成，共导入{}条职位信息: {}", jobs.size(), originalFilename);
+    }
+
+    public void processText(String email, String text) throws Exception {
+        log.info("开始处理文本: {}", text);
+        List<GptService.GptMessage> messages = new ArrayList<>();
+        messages.add(new GptService.GptMessage("system", "帮我把这段文字按照职位名，工作内容，工作时间，工作地点，联系方式这几个字段提取出来。并以JSON格式返回给我，json中职位名为title，工作内容为description，工作时间为workingTime，工作地点为location，联系方式为contactPhone。如果找不到某个字段，则该字段可以为空字符串。返回的json串务必是标准的格式"));
+        messages.add(new GptService.GptMessage("user", text));
+        List<Job> jobs = gptService.requestGPT(messages, 500);
+        log.info("GPT返回结果: {}", jobs);
+        for (Job job : jobs) {
+            createJob(email, job);
+        }
+        log.info("文本处理完成，共导入{}条职位信息", jobs.size());
     }
 
     private List<Job> extractJobInfoList(String text) {

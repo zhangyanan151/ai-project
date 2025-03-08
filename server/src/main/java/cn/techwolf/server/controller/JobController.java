@@ -83,7 +83,7 @@ public class JobController {
             String originalFilename = file.getOriginalFilename();
             String fileExtension = originalFilename != null ?
                     originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase() : "";
-            boolean check = Arrays.asList("pdf", "doc", "docx", "png").contains(fileExtension);
+            boolean check = Arrays.asList("pdf", "doc", "docx").contains(fileExtension);
             log.info("上传文件: filename={}, email={}， check={}", file.getOriginalFilename(), email, check);
             // 验证文件类型
             if (!check) {
@@ -95,6 +95,19 @@ public class JobController {
         } catch (Exception e) {
             log.error("文件上传失败: filename={}, email={}", file.getOriginalFilename(), email, e);
             return ApiResponse.error("文件上传失败");
+        }
+    }
+
+    @PostMapping("/text/import")
+    public ApiResponse<Boolean> textImportJobFile(
+            @RequestParam String email,
+            @RequestParam String text) {
+        try {
+            jobService.processText(email, text);
+            return ApiResponse.success(true);
+        } catch (Exception e) {
+            log.error("文本导入失败: text={}", text, e);
+            return ApiResponse.error("文本导入失败");
         }
     }
 

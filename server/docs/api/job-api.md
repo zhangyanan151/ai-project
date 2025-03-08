@@ -10,7 +10,7 @@
 ### 请求参数
 | 参数名 | 类型 | 必填 | 描述 | 默认值 |
 | --- | --- | --- | --- | --- |
-| email | String | 是 | 用户邮箱 | - |
+| email | String | 是 | 用户邮箱，用于身份验证 | - |
 | page | Integer | 否 | 页码，从0开始 | 0 |
 | size | Integer | 否 | 每页数量 | 5 |
 
@@ -24,8 +24,10 @@
             {
                 "id": 1,
                 "title": "职位标题",
-                "description": "职位描述"
-                // 其他职位信息字段
+                "description": "职位描述",
+                "workingTime": "工作时间",
+                "location": "工作地点",
+                "contactPhone": "联系电话"
             }
         ],
         "totalElements": 100,
@@ -60,7 +62,7 @@
 ### 请求参数
 | 参数名 | 类型 | 必填 | 描述 |
 | --- | --- | --- | --- |
-| email | String | 是 | 用户邮箱 |
+| email | String | 是 | 用户邮箱，用于身份验证 |
 
 ### 响应格式
 ```json
@@ -70,8 +72,10 @@
     "data": {
         "id": 1,
         "title": "职位标题",
-        "description": "职位描述"
-        // 其他职位信息字段
+        "description": "职位描述",
+        "workingTime": "工作时间",
+        "location": "工作地点",
+        "contactPhone": "联系电话"
     }
 }
 ```
@@ -95,7 +99,7 @@
 ### 请求参数
 | 参数名 | 类型 | 必填 | 描述 | 默认值 |
 | --- | --- | --- | --- | --- |
-| email | String | 是 | 用户邮箱 | - |
+| email | String | 是 | 用户邮箱，用于身份验证 | - |
 | keyword | String | 是 | 搜索关键词 | - |
 | page | Integer | 否 | 页码，从0开始 | 0 |
 | size | Integer | 否 | 每页数量 | 5 |
@@ -110,8 +114,10 @@
             {
                 "id": 1,
                 "title": "职位标题",
-                "description": "职位描述"
-                // 其他职位信息字段
+                "description": "职位描述",
+                "workingTime": "工作时间",
+                "location": "工作地点",
+                "contactPhone": "联系电话"
             }
         ],
         "totalElements": 100,
@@ -133,19 +139,15 @@
 
 ## 4. 创建职位
 
-### 接口信息
-- 请求路径：`/api/job/create`
-- 请求方式：POST
-- 接口描述：创建新的职位信息
-
 ### 请求参数
 | 参数名 | 类型 | 必填 | 描述 |
 | --- | --- | --- | --- |
-| email | String | 是 | 用户邮箱 |
+| email | String | 是 | 用户邮箱，用于身份验证 |
 | title | String | 是 | 职位标题 |
 | description | String | 是 | 职位描述 |
-// 其他职位信息字段
-```
+| workingTime | String | 是 | 工作时间 |
+| location | String | 是 | 工作地点 |
+| contactPhone | String | 是 | 联系电话 |
 
 ### 响应格式
 ```json
