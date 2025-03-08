@@ -90,15 +90,7 @@ public class JobController {
                 log.error("不支持的文件类型: {}", fileExtension);
                 return ApiResponse.error("不支持的文件类型");
             }
-            Job job = new Job();
-            job.setTitle("灵活用工" + System.currentTimeMillis());
-            job.setWorkingTime("早上11点 到我晚上10点");
-            job.setLocation("上海");
-            job.setSalary(1000.0);
-            job.setDescription("我是一个灵活用工，我可以在早上11点 到我晚上10点");
-            job.setContactPhone("1234567890");
-            jobService.createJob(email, job);
-//            jobService.processJobFile(email, file);
+            jobService.processJobFile(email, file);
             return ApiResponse.success(true);
         } catch (Exception e) {
             log.error("文件上传失败: filename={}, email={}", file.getOriginalFilename(), email, e);

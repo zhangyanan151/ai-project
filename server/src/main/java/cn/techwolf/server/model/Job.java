@@ -43,6 +43,9 @@ public class Job {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if(null == salary) {
+            salary = 0.0;
+        }
     }
 
     @PreUpdate
