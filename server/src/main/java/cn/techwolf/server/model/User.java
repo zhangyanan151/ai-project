@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "7_user")
 public class User {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,16 +19,17 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private LocalDateTime createTime;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
+    @Column(name = "update_time")
     private LocalDateTime updateTime;
 
-    @Column(nullable = false)
-    private Boolean isOperator = false;
+
 
     @PrePersist
     protected void onCreate() {
-        createTime = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
         updateTime = LocalDateTime.now();
     }
 
