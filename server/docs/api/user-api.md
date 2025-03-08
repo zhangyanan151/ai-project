@@ -26,13 +26,8 @@
 }
 ```
 
-### Cookie设置
-登录成功后会设置名为 `login_token` 的Cookie，用于后续接口的身份验证。Cookie属性如下：
-- HttpOnly: true
-- Secure: true（生产环境）
-- SameSite: Lax
-- Path: /
-- MaxAge: 1800（30分钟）
+### 身份验证
+登录成功后，后续请求需要在请求参数中携带email参数用于身份验证。
 
 ### 错误响应
 ```json
@@ -96,31 +91,13 @@
 }
 ```
 
-## 4. 用户登出
 
-### 接口信息
-- 请求路径：`/api/user/logout`
-- 请求方式：POST
-- 接口描述：用户登出，清除登录状态
-
-### Cookie要求
-需要在请求中包含名为 `login_token` 的Cookie
-
-### 响应格式
-```json
-{
-    "code": 0,
-    "message": "success",
-    "data": null
-}
-```
-
-### Cookie处理
-登出成功后会清除 `login_token` Cookie
 
 ## 注意事项
-1. 所有接口返回格式统一为 ApiResponse 格式
+1. 所有接口返回格式统一为 ApiResponse 格式：
+   - 成功时：code=0, message="success"
+   - 失败时：code=1, message=错误信息
 2. 请求参数均使用 URL 编码
 3. 密码传输建议进行加密处理
 4. 验证码有效期请注意控制在合理范围内
-5. 除了登录和注册相关接口，其他接口都需要先登录才能访问
+5. 除了登录和注册相关接口，其他接口都需要在请求参数中携带email进行身份验证
