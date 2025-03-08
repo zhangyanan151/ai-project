@@ -24,11 +24,6 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-
 @Slf4j
 @Service
 public class JobService {
@@ -69,13 +64,13 @@ public class JobService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return true;
         }
-        
+
         String[] keywords = keyword.toLowerCase().split("\\s+");
-        String jobText = String.join(" ", 
-            job.getTitle() != null ? job.getTitle().toLowerCase() : "",
-            job.getDescription() != null ? job.getDescription().toLowerCase() : "",
-            job.getLocation() != null ? job.getLocation().toLowerCase() : "",
-            job.getWorkingTime() != null ? job.getWorkingTime().toLowerCase() : ""
+        String jobText = String.join(" ",
+                job.getTitle() != null ? job.getTitle().toLowerCase() : "",
+                job.getDescription() != null ? job.getDescription().toLowerCase() : "",
+                job.getLocation() != null ? job.getLocation().toLowerCase() : "",
+                job.getWorkingTime() != null ? job.getWorkingTime().toLowerCase() : ""
         );
 
         return Arrays.stream(keywords)
@@ -111,7 +106,7 @@ public class JobService {
         } else {
             throw new RuntimeException("不支持的文件类型");
         }
-
+        log.info("开始处理文件: {}", text);
         Job job = extractJobInfo(text);
         createJob(email, job);
         log.info("文件处理完成: {}", originalFilename);

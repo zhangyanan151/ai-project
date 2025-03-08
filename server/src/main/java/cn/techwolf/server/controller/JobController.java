@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Arrays;
 
 @Slf4j
@@ -24,6 +25,7 @@ public class JobController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         try {
+            page = Math.max(page - 1, 0);
             Page<Job> jobs = jobService.getJobList(email, page, size);
             return ApiResponse.success(jobs);
         } catch (Exception e) {
@@ -74,25 +76,37 @@ public class JobController {
     }
 
     @PostMapping("/upload")
-    public ApiResponse<Void> uploadJobFile(
+    public ApiResponse<Boolean> uploadJobFile(
             @RequestParam String email,
             @RequestParam("file") MultipartFile file) {
         try {
             String originalFilename = file.getOriginalFilename();
-            String fileExtension = originalFilename != null ? 
-                originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase() : "";
-
+            String fileExtension = originalFilename != null ?
+                    originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase() : "";
+            boolean check = Arrays.asList("pdf", "doc", "docx", "png").contains(fileExtension);
+            log.info("上传文件: filename={}, email={}， check={}", file.getOriginalFilename(), email, check);
             // 验证文件类型
-            if (!Arrays.asList("pdf", "doc", "docx", "png").contains(fileExtension)) {
+            if (!check) {
                 log.error("不支持的文件类型: {}", fileExtension);
                 return ApiResponse.error("不支持的文件类型");
             }
-
-            jobService.processJobFile(email, file);
-            return ApiResponse.success(null);
+            Job job = new Job();
+            job.setTitle("灵活用工" + System.currentTimeMillis());
+            job.setWorkingTime("早上11点 到我晚上10点");
+            job.setLocation("上海");
+            job.setSalary(1000.0);
+            job.setDescription("我是一个灵活用工，我可以在早上11点 到我晚上10点");
+            job.setContactPhone("1234567890");
+            jobService.createJob(email, job);
+//            jobService.processJobFile(email, file);
+            return ApiResponse.success(true);
         } catch (Exception e) {
             log.error("文件上传失败: filename={}, email={}", file.getOriginalFilename(), email, e);
             return ApiResponse.error("文件上传失败");
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.asList("pdf", "doc", "docx", "png").contains("png"));
     }
 }

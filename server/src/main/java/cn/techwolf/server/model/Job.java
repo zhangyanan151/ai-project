@@ -18,7 +18,7 @@ public class Job {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;  // 工作内容
 
-    @Column(nullable = false)
+    @Column(name = "working_time", nullable = false)
     private String workingTime;  // 工作时间
 
     @Column(nullable = false)
@@ -27,13 +27,16 @@ public class Job {
     @Column(nullable = false)
     private Double salary;
 
-    @Column(nullable = false)
+    @Column(name = "contact_phone", nullable = false)
     private String contactPhone;  // 联系人手机号
 
+    @Column(name = "creator_id")
     private Long creatorId;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
