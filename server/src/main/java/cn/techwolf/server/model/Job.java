@@ -30,22 +30,20 @@ public class Job {
     @Column(nullable = false)
     private String contactPhone;  // 联系人手机号
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_id", nullable = false)
-    private User creator;
+    private Long creatorId;
 
-    private LocalDateTime createTime;
+    private LocalDateTime createdAt;
 
-    private LocalDateTime updateTime;
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        createTime = LocalDateTime.now();
-        updateTime = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updateTime = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }

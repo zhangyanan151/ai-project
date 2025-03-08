@@ -20,55 +20,63 @@ public class JobController {
 
     @GetMapping("/list")
     public ApiResponse<Page<Job>> getJobList(
+            @RequestParam String email,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         try {
-            Page<Job> jobs = jobService.getJobList(page, size);
+            Page<Job> jobs = jobService.getJobList(email, page, size);
             return ApiResponse.success(jobs);
         } catch (Exception e) {
-            log.error("获取零工列表失败", e);
+            log.error("获取零工列表失败: email={}", email, e);
             return ApiResponse.error("获取列表失败");
         }
     }
 
     @GetMapping("/{jobId}")
-    public ApiResponse<Job> getJobDetail(@PathVariable Long jobId) {
+    public ApiResponse<Job> getJobDetail(
+            @RequestParam String email,
+            @PathVariable Long jobId) {
         try {
-            Job job = jobService.getJobDetail(jobId);
+            Job job = jobService.getJobDetail(email, jobId);
             return ApiResponse.success(job);
         } catch (Exception e) {
-            log.error("获取职位详情失败: jobId={}", jobId, e);
+            log.error("获取职位详情失败: jobId={}, email={}", jobId, email, e);
             return ApiResponse.error("获取详情失败");
         }
     }
 
     @GetMapping("/search")
     public ApiResponse<Page<Job>> searchJobs(
+            @RequestParam String email,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         try {
-            Page<Job> jobs = jobService.searchJobs(keyword, page, size);
+            Page<Job> jobs = jobService.searchJobs(email, keyword, page, size);
             return ApiResponse.success(jobs);
         } catch (Exception e) {
-            log.error("搜索职位失败: keyword={}", keyword, e);
+            log.error("搜索职位失败: keyword={}, email={}", keyword, email, e);
             return ApiResponse.error("搜索失败");
         }
     }
 
     @PostMapping("/create")
-    public ApiResponse<Void> createJob(@RequestBody Job job) {
+    public ApiResponse<Void> createJob(
+            @RequestParam String email,
+            @RequestBody Job job) {
         try {
-            jobService.createJob(job);
+            jobService.createJob(email, job);
             return ApiResponse.success(null);
         } catch (Exception e) {
-            log.error("创建零工信息失败", e);
+            log.error("创建零工信息失败: email={}", email, e);
             return ApiResponse.error("创建失败");
         }
     }
 
     @PostMapping("/upload")
-    public ApiResponse<Void> uploadJobFile(@RequestParam("file") MultipartFile file) {
+    public ApiResponse<Void> uploadJobFile(
+            @RequestParam String email,
+            @RequestParam("file") MultipartFile file) {
         try {
             String originalFilename = file.getOriginalFilename();
             String fileExtension = originalFilename != null ? 
@@ -80,10 +88,10 @@ public class JobController {
                 return ApiResponse.error("不支持的文件类型");
             }
 
-            jobService.processJobFile(file);
+            jobService.processJobFile(email, file);
             return ApiResponse.success(null);
         } catch (Exception e) {
-            log.error("文件上传失败: filename={}", file.getOriginalFilename(), e);
+            log.error("文件上传失败: filename={}, email={}", file.getOriginalFilename(), email, e);
             return ApiResponse.error("文件上传失败");
         }
     }

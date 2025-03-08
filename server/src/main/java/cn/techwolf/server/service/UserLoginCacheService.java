@@ -40,7 +40,9 @@ public class UserLoginCacheService {
      * @return 用户信息，如果未登录则返回null
      */
     public User getLoginStatus(String email) {
-        return loginCache.getIfPresent(email);
+        User user = loginCache.getIfPresent(email);
+        log.info("验证用户登录状态: email={}, loginStatus={}", email, user != null);
+        return user;
     }
 
     /**
